@@ -31,7 +31,7 @@ class _TabNavigationState extends State<TabNavigation> {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: Text('Explore Buddy'),
+        title: Text('SumoVista'),
       ),
       body: Center(
         child: _widgetOptions.elementAt(_selectedIndex),
