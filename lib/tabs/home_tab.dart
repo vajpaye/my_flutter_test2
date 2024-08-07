@@ -41,11 +41,22 @@ class _HomeTabState extends State<HomeTab> {
     final prefs = await SharedPreferences.getInstance();
     final cachedData = prefs.getString('cached_places');
     if (cachedData != null) {
-      setState(() {
-        _placesByLocation = Map<String, List<Map<String, dynamic>>>.from(json.decode(cachedData));
-        _filteredPlaces = _placesByLocation.entries.expand((entry) => entry.value).toList();
-        _isLoading = false;  // Data is loaded from cache
-      });
+      try {
+        final decodedData = json.decode(cachedData);
+        final Map<String, List<Map<String, dynamic>>> castedData = (decodedData as Map<String, dynamic>).map((key, value) {
+          return MapEntry(key, (value as List).map((item) => Map<String, dynamic>.from(item)).toList());
+        });
+        if (mounted) {
+          setState(() {
+            _placesByLocation = castedData;
+            _filteredPlaces = _placesByLocation.entries.expand((entry) => entry.value).toList();
+            _isLoading = false;  // Data is loaded from cache
+          });
+        }
+      } catch (e) {
+        // Handle error gracefully
+        print('Error loading cached data: $e');
+      }
     }
   }
 
