@@ -31,6 +31,12 @@ class _HomeTabState extends State<HomeTab> {
     });
   }
 
+  @override
+  void dispose() {
+    _focusNode.dispose();
+    super.dispose();
+  }
+
   Future<void> _loadCachedData() async {
     final prefs = await SharedPreferences.getInstance();
     final cachedData = prefs.getString('cached_places');
@@ -50,11 +56,13 @@ class _HomeTabState extends State<HomeTab> {
       tempLocations.add(location.key!);
       await _fetchPlaces(location.key!);
     }
-    setState(() {
-      _locations = tempLocations;
-      _filteredPlaces = _placesByLocation.entries.expand((entry) => entry.value).toList();
-      _isLoading = false; // Data fetching completed
-    });
+    if (mounted) {
+      setState(() {
+        _locations = tempLocations;
+        _filteredPlaces = _placesByLocation.entries.expand((entry) => entry.value).toList();
+        _isLoading = false; // Data fetching completed
+      });
+    }
 
     // Cache the data
     final prefs = await SharedPreferences.getInstance();
@@ -101,7 +109,7 @@ class _HomeTabState extends State<HomeTab> {
         _focusNode.unfocus();
       },
       child: Scaffold(
-        body: _isLoading
+        body: _isLoading && _placesByLocation.isEmpty
             ? Center(child: CircularProgressIndicator())
             : Padding(
           padding: const EdgeInsets.all(16.0),
@@ -158,124 +166,124 @@ class _HomeTabState extends State<HomeTab> {
                 ),
               )
                   : Container(),
-              if (!_isSearchFocused) ...[
-                SizedBox(height: 20),
+              if (!_isSearchFocused)
                 Expanded(
                   child: SingleChildScrollView(
                     child: Column(
                       crossAxisAlignment: CrossAxisAlignment.start,
-                      children: _placesByLocation.entries.expand((entry) => entry.value).take(2).map((place) {
-                        return Card(
-                          margin: EdgeInsets.symmetric(vertical: 10),
-                          elevation: 5,
-                          shape: RoundedRectangleBorder(
-                            borderRadius: BorderRadius.circular(15),
-                          ),
-                          child: Padding(
-                            padding: const EdgeInsets.all(16.0),
-                            child: Row(
-                              crossAxisAlignment: CrossAxisAlignment.start,
-                              children: [
-                                ClipRRect(
-                                  borderRadius: BorderRadius.circular(10),
-                                  child: Image.network(
-                                    place['image'] ?? 'https://via.placeholder.com/150',
-                                    width: 100,
-                                    height: 100,
-                                    fit: BoxFit.cover,
-                                  ),
-                                ),
-                                SizedBox(width: 10),
-                                Expanded(
-                                  child: Column(
-                                    crossAxisAlignment: CrossAxisAlignment.start,
-                                    children: [
-                                      Text(
-                                        place['title'],
-                                        style: TextStyle(
-                                          color: Colors.black,
-                                          fontWeight: FontWeight.bold,
-                                          fontSize: 18,
-                                        ),
-                                      ),
-                                      SizedBox(height: 5),
-                                      GestureDetector(
-                                        onTap: () {
-                                          Navigator.push(
-                                            context,
-                                            MaterialPageRoute(
-                                              builder: (context) => ReviewPage(
-                                                location: place['location'],
-                                                placeKey: place['key'],
-                                                placeTitle: place['title'],
-                                              ),
-                                            ),
-                                          );
-                                        },
-                                        child: Row(
-                                          children: [
-                                            Icon(Icons.edit, color: Colors.black),
-                                            SizedBox(width: 5),
-                                            Text(
-                                              'Write a review',
-                                              style: TextStyle(color: Colors.black, fontSize: 16),
-                                            ),
-                                          ],
-                                        ),
-                                      ),
-                                    ],
-                                  ),
-                                ),
-                              ],
+                      children: [
+                        ..._placesByLocation.entries.expand((entry) => entry.value).take(2).map((place) {
+                          return Card(
+                            margin: EdgeInsets.symmetric(vertical: 10),
+                            elevation: 5,
+                            shape: RoundedRectangleBorder(
+                              borderRadius: BorderRadius.circular(15),
                             ),
+                            child: Padding(
+                              padding: const EdgeInsets.all(16.0),
+                              child: Row(
+                                crossAxisAlignment: CrossAxisAlignment.start,
+                                children: [
+                                  ClipRRect(
+                                    borderRadius: BorderRadius.circular(10),
+                                    child: Image.network(
+                                      place['image'] ?? 'https://via.placeholder.com/150',
+                                      width: MediaQuery.of(context).size.width * 0.25,
+                                      height: MediaQuery.of(context).size.width * 0.25,
+                                      fit: BoxFit.cover,
+                                    ),
+                                  ),
+                                  SizedBox(width: 10),
+                                  Expanded(
+                                    child: Column(
+                                      crossAxisAlignment: CrossAxisAlignment.start,
+                                      children: [
+                                        Text(
+                                          place['title'],
+                                          style: TextStyle(
+                                            color: Colors.black,
+                                            fontWeight: FontWeight.bold,
+                                            fontSize: 18,
+                                          ),
+                                        ),
+                                        SizedBox(height: 5),
+                                        GestureDetector(
+                                          onTap: () {
+                                            Navigator.push(
+                                              context,
+                                              MaterialPageRoute(
+                                                builder: (context) => ReviewPage(
+                                                  location: place['location'],
+                                                  placeKey: place['key'],
+                                                  placeTitle: place['title'],
+                                                ),
+                                              ),
+                                            );
+                                          },
+                                          child: Row(
+                                            children: [
+                                              Icon(Icons.edit, color: Colors.black),
+                                              SizedBox(width: 5),
+                                              Text(
+                                                'Write a review',
+                                                style: TextStyle(color: Colors.black, fontSize: 16),
+                                              ),
+                                            ],
+                                          ),
+                                        ),
+                                      ],
+                                    ),
+                                  ),
+                                ],
+                              ),
+                            ),
+                          );
+                        }).toList(),
+                        SizedBox(height: 20),
+                        Center(
+                          child: Column(
+                            children: [
+                              Text(
+                                'Is SumoVista missing a place?',
+                                style: TextStyle(
+                                  fontSize: 18,
+                                  fontWeight: FontWeight.bold,
+                                  color: Colors.black,
+                                ),
+                              ),
+                              SizedBox(height: 10),
+                              Text(
+                                'Tell us about it so we can improve what we show.',
+                                style: TextStyle(
+                                  fontSize: 16,
+                                  color: Colors.black,
+                                ),
+                                textAlign: TextAlign.center,
+                              ),
+                              SizedBox(height: 20),
+                              ElevatedButton.icon(
+                                onPressed: () {
+                                  // Add functionality to add a missing place
+                                },
+                                icon: Icon(Icons.location_on, color: Colors.white),
+                                label: Text('Add a missing place'),
+                                style: ElevatedButton.styleFrom(
+                                  backgroundColor: Colors.black, // Button color
+                                  foregroundColor: Colors.white, // Text color
+                                  padding: EdgeInsets.symmetric(horizontal: 20, vertical: 10),
+                                  shape: RoundedRectangleBorder(
+                                    borderRadius: BorderRadius.circular(10),
+                                  ),
+                                ),
+                              ),
+                            ],
                           ),
-                        );
-                      }).toList(),
+                        ),
+                        SizedBox(height: 20),
+                      ],
                     ),
                   ),
                 ),
-                SizedBox(height: 20),
-                Center(
-                  child: Column(
-                    children: [
-                      Text(
-                        'Is SumoVista missing a place?',
-                        style: TextStyle(
-                          fontSize: 18,
-                          fontWeight: FontWeight.bold,
-                          color: Colors.black,
-                        ),
-                      ),
-                      SizedBox(height: 10),
-                      Text(
-                        'Tell us about it so we can improve what we show.',
-                        style: TextStyle(
-                          fontSize: 16,
-                          color: Colors.black,
-                        ),
-                        textAlign: TextAlign.center,
-                      ),
-                      SizedBox(height: 20),
-                      ElevatedButton.icon(
-                        onPressed: () {
-                          // Add functionality to add a missing place
-                        },
-                        icon: Icon(Icons.location_on, color: Colors.white),
-                        label: Text('Add a missing place'),
-                        style: ElevatedButton.styleFrom(
-                          backgroundColor: Colors.black, // Button color
-                          foregroundColor: Colors.white, // Text color
-                          padding: EdgeInsets.symmetric(horizontal: 20, vertical: 10),
-                          shape: RoundedRectangleBorder(
-                            borderRadius: BorderRadius.circular(10),
-                          ),
-                        ),
-                      ),
-                    ],
-                  ),
-                ),
-                SizedBox(height: 20),
-              ],
             ],
           ),
         ),
