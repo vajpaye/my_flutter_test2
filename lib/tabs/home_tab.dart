@@ -1,6 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:firebase_database/firebase_database.dart';
-import 'package:my_flutter_test2/pages//review_page.dart'; // Make sure to import the ReviewPage
+import 'package:shared_preferences/shared_preferences.dart';
+import 'dart:convert';  // For JSON encoding and decoding
+import 'package:my_flutter_test2/pages/review_page.dart';
 
 class HomeTab extends StatefulWidget {
   @override
@@ -15,16 +17,30 @@ class _HomeTabState extends State<HomeTab> {
   List<Map<String, dynamic>> _filteredPlaces = [];
   String _searchQuery = '';
   bool _isSearchFocused = false;
+  bool _isLoading = true;
 
   @override
   void initState() {
     super.initState();
+    _loadCachedData();
     _fetchLocations();
     _focusNode.addListener(() {
       setState(() {
         _isSearchFocused = _focusNode.hasFocus;
       });
     });
+  }
+
+  Future<void> _loadCachedData() async {
+    final prefs = await SharedPreferences.getInstance();
+    final cachedData = prefs.getString('cached_places');
+    if (cachedData != null) {
+      setState(() {
+        _placesByLocation = Map<String, List<Map<String, dynamic>>>.from(json.decode(cachedData));
+        _filteredPlaces = _placesByLocation.entries.expand((entry) => entry.value).toList();
+        _isLoading = false;  // Data is loaded from cache
+      });
+    }
   }
 
   Future<void> _fetchLocations() async {
@@ -37,7 +53,12 @@ class _HomeTabState extends State<HomeTab> {
     setState(() {
       _locations = tempLocations;
       _filteredPlaces = _placesByLocation.entries.expand((entry) => entry.value).toList();
+      _isLoading = false; // Data fetching completed
     });
+
+    // Cache the data
+    final prefs = await SharedPreferences.getInstance();
+    prefs.setString('cached_places', json.encode(_placesByLocation));
   }
 
   Future<void> _fetchPlaces(String location) async {
@@ -80,7 +101,9 @@ class _HomeTabState extends State<HomeTab> {
         _focusNode.unfocus();
       },
       child: Scaffold(
-        body: Padding(
+        body: _isLoading
+            ? Center(child: CircularProgressIndicator())
+            : Padding(
           padding: const EdgeInsets.all(16.0),
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
@@ -119,7 +142,7 @@ class _HomeTabState extends State<HomeTab> {
                             builder: (context) => ReviewPage(
                               location: place['location'],
                               placeKey: place['key'],
-                              placeTitle : place['title']
+                              placeTitle: place['title'],
                             ),
                           ),
                         );
@@ -184,7 +207,7 @@ class _HomeTabState extends State<HomeTab> {
                                               builder: (context) => ReviewPage(
                                                 location: place['location'],
                                                 placeKey: place['key'],
-                                                  placeTitle : place['title']
+                                                placeTitle: place['title'],
                                               ),
                                             ),
                                           );
@@ -211,6 +234,47 @@ class _HomeTabState extends State<HomeTab> {
                     ),
                   ),
                 ),
+                SizedBox(height: 20),
+                Center(
+                  child: Column(
+                    children: [
+                      Text(
+                        'Is SumoVista missing a place?',
+                        style: TextStyle(
+                          fontSize: 18,
+                          fontWeight: FontWeight.bold,
+                          color: Colors.black,
+                        ),
+                      ),
+                      SizedBox(height: 10),
+                      Text(
+                        'Tell us about it so we can improve what we show.',
+                        style: TextStyle(
+                          fontSize: 16,
+                          color: Colors.black,
+                        ),
+                        textAlign: TextAlign.center,
+                      ),
+                      SizedBox(height: 20),
+                      ElevatedButton.icon(
+                        onPressed: () {
+                          // Add functionality to add a missing place
+                        },
+                        icon: Icon(Icons.location_on, color: Colors.white),
+                        label: Text('Add a missing place'),
+                        style: ElevatedButton.styleFrom(
+                          backgroundColor: Colors.black, // Button color
+                          foregroundColor: Colors.white, // Text color
+                          padding: EdgeInsets.symmetric(horizontal: 20, vertical: 10),
+                          shape: RoundedRectangleBorder(
+                            borderRadius: BorderRadius.circular(10),
+                          ),
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+                SizedBox(height: 20),
               ],
             ],
           ),
