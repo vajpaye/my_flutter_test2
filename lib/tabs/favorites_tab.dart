@@ -179,60 +179,56 @@ class _FavoritesTabState extends State<FavoritesTab> {
                         child: Padding(
                           padding: const EdgeInsets.all(8.0),
                           child: Card(
-                            elevation: 2,
-                            child: Padding(
-                              padding: const EdgeInsets.all(16.0),
-                              child: Row(
-                                children: [
-                                  Image.network(
-                                    _items[index]['image'],
-                                    width: 100,
-                                    height: 100,
-                                    fit: BoxFit.cover,
-                                    errorBuilder: (context, error, stackTrace) {
-                                      return Container(
-                                        width: 100,
-                                        height: 100,
-                                        color: Colors.grey,
-                                        child: Icon(Icons.broken_image, color: Colors.white),
-                                      );
-                                    },
+                            margin: EdgeInsets.symmetric(vertical: 10),
+                            elevation: 5,
+                            shape: RoundedRectangleBorder(
+                              borderRadius: BorderRadius.circular(15),
+                            ),
+                            child: Column(
+                              crossAxisAlignment: CrossAxisAlignment.start,
+                              children: [
+                                ListTile(
+                                  leading: CircleAvatar(
+                                    backgroundImage: NetworkImage(_items[index]['image'] ?? 'https://via.placeholder.com/150'),
                                   ),
-                                  SizedBox(width: 10),
-                                  Expanded(
-                                    child: Column(
-                                      crossAxisAlignment: CrossAxisAlignment.start,
-                                      children: [
-                                        Text(
-                                          _items[index]['title'],
-                                          style: TextStyle(
-                                            fontWeight: FontWeight.bold,
-                                            fontSize: 16,
+                                  title: Text(_items[index]['title'] ?? 'No title', style: TextStyle(fontWeight: FontWeight.bold)),
+                                ),
+                                Image.network(
+                                  _items[index]['image'] ?? 'https://via.placeholder.com/150',
+                                  width: double.infinity,
+                                  height: 200,
+                                  fit: BoxFit.cover,
+                                ),
+                                Padding(
+                                  padding: const EdgeInsets.all(16.0),
+                                  child: Text(
+                                    _items[index]['description'] != null ? _items[index]['description']['Overview'] ?? 'No description available' : 'No description available',
+                                    style: TextStyle(fontSize: 16),
+                                  ),
+                                ),
+                                Center(
+                                  child: TextButton(
+                                    onPressed: () {
+                                      Navigator.push(
+                                        context,
+                                        MaterialPageRoute(
+                                          builder: (context) => DetailPage(
+                                            itemId: index,
+                                            location: _selectedLocation!,
                                           ),
                                         ),
-                                        SizedBox(height: 5),
-                                        Text(
-                                          _items[index]['description']['Overview'],
-                                          maxLines: 3,
-                                          overflow: TextOverflow.ellipsis,
-                                        ),
-                                        SizedBox(height: 10),
-                                        Row(
-                                          children: List.generate(5, (starIndex) {
-                                            return Icon(
-                                              Icons.star,
-                                              size: 20,
-                                              color: starIndex < _items[index]['rating']
-                                                  ? Colors.orange
-                                                  : Colors.grey,
-                                            );
-                                          }),
-                                        ),
-                                      ],
+                                      );
+                                    },
+                                    style: TextButton.styleFrom(
+                                      backgroundColor: Colors.transparent,
+                                    ),
+                                    child: Text(
+                                      'VIEW',
+                                      style: TextStyle(color: Colors.black, fontSize: 16),
                                     ),
                                   ),
-                                ],
-                              ),
+                                ),
+                              ],
                             ),
                           ),
                         ),

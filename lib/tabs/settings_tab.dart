@@ -1,8 +1,16 @@
 import 'package:flutter/material.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import '../main.dart';
+import '../pages/profile_edit_page.dart'; // Import the profile edit page
 
-class SettingsTab extends StatelessWidget {
+class SettingsTab extends StatefulWidget {
+  @override
+  _SettingsTabState createState() => _SettingsTabState();
+}
+
+class _SettingsTabState extends State<SettingsTab> {
+  bool isDarkTheme = false;
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -27,7 +35,10 @@ class SettingsTab extends StatelessWidget {
             ),
             SizedBox(height: 40),
             _buildMenuItem(Icons.person, 'Profile', () {
-              // Navigate to profile page
+              Navigator.push(
+                context,
+                MaterialPageRoute(builder: (context) => ProfileEditPage()),
+              );
             }),
             _buildDivider(),
             _buildMenuItem(Icons.support, 'Support', () {
@@ -37,6 +48,26 @@ class SettingsTab extends StatelessWidget {
             _buildMenuItem(Icons.policy, 'Terms', () {
               // Navigate to terms page
             }),
+            _buildDivider(),
+            ListTile(
+              leading: Icon(Icons.brightness_6, color: Colors.black),
+              title: Text('Dark Theme', style: TextStyle(color: Colors.black)),
+              trailing: Switch(
+                value: isDarkTheme,
+                onChanged: (value) {
+                  setState(() {
+                    isDarkTheme = value;
+                  });
+                  if (value) {
+                    // Switch to dark theme
+                    _setThemeMode(ThemeMode.dark);
+                  } else {
+                    // Switch to light theme
+                    _setThemeMode(ThemeMode.light);
+                  }
+                },
+              ),
+            ),
             _buildDivider(),
             Spacer(),
             ElevatedButton(
@@ -64,6 +95,10 @@ class SettingsTab extends StatelessWidget {
         ),
       ),
     );
+  }
+
+  void _setThemeMode(ThemeMode mode) {
+    MyApp.of(context)?.setThemeMode(mode);
   }
 
   Widget _buildMenuItem(IconData icon, String title, VoidCallback onTap) {

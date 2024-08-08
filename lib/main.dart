@@ -13,7 +13,24 @@ void main() async {
   runApp(MyApp());
 }
 
-class MyApp extends StatelessWidget {
+class MyApp extends StatefulWidget {
+  @override
+  MyAppState createState() => MyAppState();
+
+  static MyAppState? of(BuildContext context) {
+    return context.findAncestorStateOfType<MyAppState>();
+  }
+}
+
+class MyAppState extends State<MyApp> {
+  ThemeMode _themeMode = ThemeMode.light;
+
+  void setThemeMode(ThemeMode mode) {
+    setState(() {
+      _themeMode = mode;
+    });
+  }
+
   @override
   Widget build(BuildContext context) {
     return MaterialApp(
@@ -22,6 +39,10 @@ class MyApp extends StatelessWidget {
         brightness: Brightness.light,
         primarySwatch: Colors.blue,
       ),
+      darkTheme: ThemeData(
+        brightness: Brightness.dark,
+      ),
+      themeMode: _themeMode,
       home: LoginPage(),
     );
   }
@@ -41,20 +62,12 @@ class _LoginPageState extends State<LoginPage> {
     });
 
     try {
-      /*final GoogleSignInAccount? googleUser = await GoogleSignIn().signIn();
-      if (googleUser != null) {
-        final GoogleSignInAuthentication googleAuth = await googleUser.authentication;
+      // Your Google sign-in logic here
 
-        final AuthCredential credential = GoogleAuthProvider.credential(
-          accessToken: googleAuth.accessToken,
-          idToken: googleAuth.idToken,
-        );
-
-        await FirebaseAuth.instance.signInWithCredential(credential);*/
-        Navigator.pushReplacement(
-          context,
-          MaterialPageRoute(builder: (context) => TabNavigation()),
-        );
+      Navigator.pushReplacement(
+        context,
+        MaterialPageRoute(builder: (context) => TabNavigation()),
+      );
       //}
     } catch (error) {
       print(error);
@@ -66,7 +79,6 @@ class _LoginPageState extends State<LoginPage> {
   }
 
   Future<void> _signup(BuildContext context) async {
-    // You can implement the sign-up logic here similarly
     _login(context);
   }
 
@@ -108,7 +120,16 @@ class _LoginPageState extends State<LoginPage> {
                     ),
                   ),
                   SizedBox(height: 16),
-                  Divider(color: Colors.black),
+                  Row(
+                    children: [
+                      Expanded(child: Divider(color: Colors.black)),
+                      Padding(
+                        padding: const EdgeInsets.symmetric(horizontal: 8.0),
+                        child: Text('or'),
+                      ),
+                      Expanded(child: Divider(color: Colors.black)),
+                    ],
+                  ),
                   SizedBox(height: 16),
                   ElevatedButton(
                     onPressed: () => _signup(context),

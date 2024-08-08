@@ -190,63 +190,51 @@ class _HomeTabState extends State<HomeTab> {
                             shape: RoundedRectangleBorder(
                               borderRadius: BorderRadius.circular(15),
                             ),
-                            child: Padding(
-                              padding: const EdgeInsets.all(16.0),
-                              child: Row(
-                                crossAxisAlignment: CrossAxisAlignment.start,
-                                children: [
-                                  ClipRRect(
-                                    borderRadius: BorderRadius.circular(10),
-                                    child: Image.network(
-                                      place['image'] ?? 'https://via.placeholder.com/150',
-                                      width: MediaQuery.of(context).size.width * 0.25,
-                                      height: MediaQuery.of(context).size.width * 0.25,
-                                      fit: BoxFit.cover,
-                                    ),
+                            child: Column(
+                              crossAxisAlignment: CrossAxisAlignment.start,
+                              children: [
+                                ListTile(
+                                  leading: CircleAvatar(
+                                    backgroundImage: NetworkImage(place['image'] ?? 'https://via.placeholder.com/150'),
                                   ),
-                                  SizedBox(width: 10),
-                                  Expanded(
-                                    child: Column(
-                                      crossAxisAlignment: CrossAxisAlignment.start,
-                                      children: [
-                                        Text(
-                                          place['title'],
-                                          style: TextStyle(
-                                            color: Colors.black,
-                                            fontWeight: FontWeight.bold,
-                                            fontSize: 18,
+                                  title: Text(place['title'], style: TextStyle(fontWeight: FontWeight.bold)),
+                                  subtitle: Text(place['location']),
+                                ),
+                                Image.network(
+                                  place['image'] ?? 'https://via.placeholder.com/150',
+                                  width: double.infinity,
+                                  height: 200,
+                                  fit: BoxFit.cover,
+                                ),
+                                Padding(
+                                  padding: const EdgeInsets.all(16.0),
+                                  child: Text(place['description'] ?? 'No description available', style: TextStyle(fontSize: 16)),
+                                ),
+                                Center(
+                                  child: TextButton(
+                                    onPressed: () {
+                                      Navigator.push(
+                                        context,
+                                        MaterialPageRoute(
+                                          builder: (context) => ReviewPage(
+                                            location: place['location'],
+                                            placeKey: place['key'],
+                                            placeTitle: place['title'],
                                           ),
                                         ),
-                                        SizedBox(height: 5),
-                                        GestureDetector(
-                                          onTap: () {
-                                            Navigator.push(
-                                              context,
-                                              MaterialPageRoute(
-                                                builder: (context) => ReviewPage(
-                                                  location: place['location'],
-                                                  placeKey: place['key'],
-                                                  placeTitle: place['title'],
-                                                ),
-                                              ),
-                                            );
-                                          },
-                                          child: Row(
-                                            children: [
-                                              Icon(Icons.edit, color: Colors.black),
-                                              SizedBox(width: 5),
-                                              Text(
-                                                'Write a review',
-                                                style: TextStyle(color: Colors.black, fontSize: 16),
-                                              ),
-                                            ],
-                                          ),
-                                        ),
-                                      ],
+                                      );
+                                    },
+                                    style: TextButton.styleFrom(
+                                      //primary: Colors.black,
+                                      backgroundColor: Colors.transparent,
+                                    ),
+                                    child: Text(
+                                      'Write a review',
+                                      style: TextStyle(color: Colors.black, fontSize: 16),
                                     ),
                                   ),
-                                ],
-                              ),
+                                ),
+                              ],
                             ),
                           );
                         }).toList(),
